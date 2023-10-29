@@ -46,13 +46,10 @@ struct Point {
     Point operator+(const Point& other) const { return Point(other.x + x, other.y + y); }
     Point operator-(const Point& other) const { return Point(other.x - x, other.y - y); }
     bool operator==(const Point& other) const { return x == other.x && y == other.y; }
+    bool operator<(const Point& other) const {
+        return (x == other.x && y < other.y) || x < other.x;
+    }
 };
-
-Point a, b, c;
-
-void Input() {
-    cin >> a.x >> a.y >> b.x >> b.y >> c.x >> c.y;
-}
 
 ll cross(Point a, Point b) {
     return a.x * b.y - a.y * b.x;
@@ -65,11 +62,43 @@ int ccw(Point a, Point b, Point c) {
     return res < 0 ? -1 : 1;
 }
 
+vector<Point> a;
+int n;
+
+void Input() {
+    cin >> n;
+    a.resize(n);
+    FOR(i, 0, n - 1) cin >> a[i].x >> a[i].y;
+}
+
+vector<Point> convexHull(vector<Point> pt) {
+    sort(pt.begin(), pt.end());
+    vector<Point> hull(pt.size() + 1);
+    int siz = 0;
+    for (int i = 0; i < n; i++) {
+        while (siz >= 2 && ccw(hull[siz - 2], hull[siz - 1], pt[i]) == -1)
+            --siz;
+        hull[siz++] = pt[i];
+    }
+
+    for (int i = n - 2, last = siz; i >= 0; i--) {
+        while (siz - last >= 1 && ccw(hull[siz - 2], hull[siz - 1], pt[i]) == -1)
+            --siz;
+        hull[siz++] = pt[i];
+    }
+
+    if (siz) {    // sort to ccw order
+        hull.resize(siz - 1);
+        reverse(hull.begin() + 1, hull.end());
+    }
+    return hull;
+}
+
 void Solve() {
-    ll res = ccw(a, b, c);
-    if (res == 0) cout << "TOUCH\n";
-    else if (res == 1) cout << "LEFT\n";
-    else cout << "RIGHT\n";
+    vector<Point> hull = convexHull(a);
+    cout << hull.size() << '\n';
+    for (Point p : hull)
+        cout << p.x << ' ' << p.y << '\n';
 }
 
 int main() {
@@ -79,9 +108,6 @@ int main() {
         freopen(input_file, "r", stdin);
         freopen(output_file, "w", stdout);
     }
-    int t;
-    cin >> t;
-    while (t--)
-        Input(), Solve();
+    Input(), Solve();
     return 0;
 }

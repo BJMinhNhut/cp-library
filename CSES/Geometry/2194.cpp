@@ -46,30 +46,56 @@ struct Point {
     Point operator+(const Point& other) const { return Point(other.x + x, other.y + y); }
     Point operator-(const Point& other) const { return Point(other.x - x, other.y - y); }
     bool operator==(const Point& other) const { return x == other.x && y == other.y; }
+    bool operator<(const Point& other) const {
+        return (x == other.x && y < other.y) || x < other.x;
+    }
+    ll norm() const { return x * x + y * y; }    // x^2 + y^2
 };
 
-Point a, b, c;
+int n;
+const int N = 2e5 + 5;
+vector<Point> a;
 
 void Input() {
-    cin >> a.x >> a.y >> b.x >> b.y >> c.x >> c.y;
+    cin >> n;
+    a.resize(n);
+    FOR(i, 0, n - 1) cin >> a[i].x >> a[i].y;
 }
 
-ll cross(Point a, Point b) {
-    return a.x * b.y - a.y * b.x;
-}
+const int MAX = 1e9;
+// return squared distance
+ll closestPair(vector<Point> pt, Point& p, Point& q) {
+    if (a.size() < 2) return -1;
+    // sort by y
+    sort(pt.begin(), pt.end(),
+         [](const Point& a, const Point& b) { return (a.y == b.y && a.x < b.x) || a.y < b.y; });
+    ll sqrDist = (a[1] - a[0]).norm();
+    p = a[0], q = a[1];
 
-// 0: colinear, -1: turn right, 1: turn left
-int ccw(Point a, Point b, Point c) {
-    ll res = cross(b - a, c - a);
-    if (res == 0) return 0;
-    return res < 0 ? -1 : 1;
+    set<Point> st;    // ordered set by x
+    for (Point a : pt) {
+        ll d = sqrt(sqrDist);
+        Point cur(a.x - d, -MAX - 1);
+        while (1) {
+            auto it = st.upper_bound(cur);
+            if (it == st.end()) break;
+            cur = *it;
+            if (cur.x > a.x + d) break;
+            if (cur.y < a.y - d) {
+                st.erase(it);
+                continue;
+            }
+            if (minimize(sqrDist, (a - cur).norm())) p = a, q = cur;
+        }
+        st.insert(a);
+    }
+    return sqrDist;
 }
 
 void Solve() {
-    ll res = ccw(a, b, c);
-    if (res == 0) cout << "TOUCH\n";
-    else if (res == 1) cout << "LEFT\n";
-    else cout << "RIGHT\n";
+    Point p, q;
+    ll dist = closestPair(a, p, q);
+    cout << dist;
 }
 
 int main() {
@@ -79,9 +105,6 @@ int main() {
         freopen(input_file, "r", stdin);
         freopen(output_file, "w", stdout);
     }
-    int t;
-    cin >> t;
-    while (t--)
-        Input(), Solve();
+    Input(), Solve();
     return 0;
 }

@@ -48,10 +48,13 @@ struct Point {
     bool operator==(const Point& other) const { return x == other.x && y == other.y; }
 };
 
-Point a, b, c;
+const int N = 2e5 + 5;
+Point a[N];
+int n;
 
 void Input() {
-    cin >> a.x >> a.y >> b.x >> b.y >> c.x >> c.y;
+    cin >> n;
+    FOR(i, 0, n - 1) cin >> a[i].x >> a[i].y;
 }
 
 ll cross(Point a, Point b) {
@@ -65,11 +68,15 @@ int ccw(Point a, Point b, Point c) {
     return res < 0 ? -1 : 1;
 }
 
+ll doubleArea(Point* a, int n) {
+    ll ans = 0;
+    for (int i = 0; i < n; ++i)
+        ans += cross(a[i], a[(i + 1) % n]);
+    return abs(ans);
+}
+
 void Solve() {
-    ll res = ccw(a, b, c);
-    if (res == 0) cout << "TOUCH\n";
-    else if (res == 1) cout << "LEFT\n";
-    else cout << "RIGHT\n";
+    cout << doubleArea(a, n);
 }
 
 int main() {
@@ -79,8 +86,7 @@ int main() {
         freopen(input_file, "r", stdin);
         freopen(output_file, "w", stdout);
     }
-    int t;
-    cin >> t;
+    int t = 1;
     while (t--)
         Input(), Solve();
     return 0;
